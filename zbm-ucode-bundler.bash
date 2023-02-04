@@ -2,9 +2,27 @@
 
 
 
+# Root check:
+if [[ ${UID} != 0 ]]; then
+  echo "You need root privileges to run this script."
+  exit 1
+fi
+
+
+
 # These are taken by parameters:
 KERNEL="${1}" # linux
 UCODE="${2}" # intel-ucode
+SUFFIX="${3}" # bundled-ucode
+
+
+
+# Parameters check:
+if [[ -z "${KERNEL}" ]] || [[ -z "${UCODE}" ]] || [[ -z "${SUFFIX}" ]]; then
+  echo "Missing positional parameters - kernel: _${KERNEL}_ -" \
+    "ucode: _${UCODE}_ - suffix: _${SUFFIX}_"
+  exit 2
+fi
 
 
 
@@ -31,7 +49,7 @@ fi
 # If kernel or ucode hasn't been found, simply quit:
 if [[ -z "${KERNEL_MD5_NEW}" ]] || [[ -z "${UCODE_MD5_NEW}" ]]; then
   echo "Kernel or ucode not found: ${KERNEL_PATH} - ${UCODE_PATH}"
-  exit 1
+  exit 3
 fi
 
 # Get the previously stored MD5 sums:
@@ -47,8 +65,9 @@ if [[ "${KERNEL_MD5}" != "${KERNEL_MD5_NEW}" ]] || \
    [[ "${UCODE_MD5}" != "${UCODE_MD5_NEW}" ]]
 then
   # Generate a new image:
-  cat "${UCODE_PATH}" "${KERNEL_PATH}" > "/boot/initramfs-${KERNEL}-mc.img"
-  ln -Tsrf "/boot/vmlinuz-${KERNEL}" "/boot/vmlinuz-${KERNEL}-mc"
+  cat "${UCODE_PATH}" "${KERNEL_PATH}" > \
+    "/boot/initramfs-${KERNEL}-${SUFFIX}.img"
+  ln -Tsrf "/boot/vmlinuz-${KERNEL}" "/boot/vmlinuz-${KERNEL}-${SUFFIX}"
 
   # Update md5sums:
   echo "${KERNEL_MD5_NEW}" > "${KERNEL_MD5_PATH}"

@@ -11,6 +11,12 @@ Since ZfsBootMenu can't load the kernel while adding in the microcode, this
 script ensures there will always be an additional image with the ucode bundled
 with the initramfs.  
 
+Requires 3 positional parameters:  
+
+* kernel name (eg. linux)  
+* ucode name (eg. intel-ucode)  
+* suffix to add to the generated files (eg. bundled-ucode)  
+
 Sample pacman hook:
 ```
 [Trigger]
@@ -23,7 +29,7 @@ Target = *
 [Action]
 Description = Generating kernel image with bundled microcode...
 When = PostTransaction
-Exec = /path/to/zbm-ucode-bundler.bash linux intel-ucode
+Exec = /path/to/zbm-ucode-bundler.bash linux intel-ucode bundled-ucode
 ```
 
 
