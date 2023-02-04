@@ -14,8 +14,8 @@ with the initramfs.
 Sample pacman hook:
 ```
 [Trigger]
-Operation = Upgrade
 Operation = Install
+Operation = Upgrade
 Operation = Remove
 Type = Package
 Target = *
@@ -54,13 +54,16 @@ zfs-snapshotter usage:
 Type = Package
 Operation = Install
 Operation = Upgrade
+Operation = Remove
 Target = linux
 
 [Trigger]
 Type = Path
 Operation = Install
 Operation = Upgrade
+Operation = Remove
 Target = usr/lib/modules/*/vmlinuz
+Target = usr/lib/initcpio/*
 
 [Action]
 Description = Creating a backup BE...
