@@ -1,6 +1,5 @@
 #! /usr/bin/env bash
 
-PATH=$PATH:/sbin
 AUTOSNAP=com.sun:auto-snapshot
 
 # Parameters check:
@@ -61,14 +60,14 @@ for DS in `zfs list $DATASET $RECURSIV -H | awk '{ print $1}'`; do
         fi
 
         # If we got here, take the new snapshot:
-        echo zfs snapshot "${SNAP}"
+        zfs snapshot "${SNAP}"
         OUTCOME=${?}
 
         # If the snapshot was successful and we already reached the threshold, remove
         # the exceeding ones:
         if [[ 0 == ${OUTCOME} ]] && [[ ${#SNAPS} -ge ${MAX_SNAPS} ]]; then
           for(( i=0; i<=$((${#SNAPS[@]} - ${MAX_SNAPS})) && i<${#SNAPS[@]}; i++ )); do
-            echo zfs destroy "${SNAPS[${i}]}"
+            zfs destroy "${SNAPS[${i}]}"
           done
         fi
     fi
