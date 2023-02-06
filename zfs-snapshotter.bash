@@ -1,9 +1,12 @@
 #! /usr/bin/env bash
 
+PATH=$PATH:/sbin
+AUTOSNAP=com.sun:auto-snapshot
+
 # Parameters check:
 if [[ ${#} < 2 ]] || [[ ${1} == -h ]]; then
   echo "zfs-snapshotter usage:"
-  echo "  zfs-snapshotter <dataset name> <max snapshots #> <snapshot suffix>"
+  echo "  zfs-snapshotter <dataset name> <max snapshots #> [<-r>] [<snapshot suffix>]"
   exit 1
 fi
 
@@ -13,8 +16,13 @@ DATASET=${1}
 # Max number of snapshots to keep:
 MAX_SNAPS=${2}
 
-# Snapshot suffix:
-SUFFIX="${3}"
+# recurse and Snapshot suffix:
+if [[ ${3} == -r ]]; then
+    RECURSIV=-r
+    SUFFIX="${4}"
+else
+    SUFFIX="${3}"
+fi
 
 # If a suffix is present, normalize it:
 if [[ "${SUFFIX}" != "" ]]; then
@@ -30,34 +38,41 @@ if [[ "${SUFFIX}" != "" ]]; then
   fi
 fi
 
-# Snapshot to take:
-SNAP="${DATASET}@$(date "+%Y-%m-%d")${SUFFIX}"
+# We dive through all the datasets and just hit those without $AUTOSNAP = false
+for DS in `zfs list $DATASET $RECURSIV -H | awk '{ print $1}'`; do
+    if ! [[ `zfs get -H $AUTOSNAP $DS | awk '{print $3}'` =  "false" ]] \
+        || [[ $RECURSIV != -r ]] ; then
 
-# Take in all the dataset's snapshots matching the right format:
-SNAPS=(
-  $(
-    zfs list -t snapshot -o name -r "${DATASET}" | \
-      grep '@2[0-1][2-9][0-9]-[0-1][0-9]-[0-3][0-9]'
-  )
-)
+        # Snapshot to take:
+        SNAP="${DS}@$(date "+%Y-%m-%d")${SUFFIX}"
 
-# If a snapshot with the name we need is already taken, do nothing:
-if [[ " ${SNAPS[*]} " =~ " ${SNAP} " ]]; then
-  echo "Snapshot '${SNAP}' already exists, skipping."
-  exit 2
-fi
+        # Take in all the DS's snapshots matching the right format:
+        SNAPS=(
+          $(
+            zfs list -t snapshot -o name -r "${DS}" | \
+              grep '@2[0-1][2-9][0-9]-[0-1][0-9]-[0-3][0-9]'
+          )
+        )
 
-# If we got here, take the new snapshot:
-zfs snapshot "${SNAP}"
-OUTCOME=${?}
+        # If a snapshot with the name we need is already taken, do nothing:
+        if [[ " ${SNAPS[*]} " =~ " ${SNAP} " ]]; then
+          echo "Snapshot '${SNAP}' already exists, skipping."
+          exit 2
+        fi
 
-# If the snapshot was successful and we already reached the threshold, remove
-# the exceeding ones:
-if [[ 0 == ${OUTCOME} ]] && [[ ${#SNAPS} -ge ${MAX_SNAPS} ]]; then
-  for(( i=0; i<=$((${#SNAPS[@]} - ${MAX_SNAPS})) && i<${#SNAPS[@]}; i++ )); do
-    zfs destroy "${SNAPS[${i}]}"
-  done
-fi
+        # If we got here, take the new snapshot:
+        echo zfs snapshot "${SNAP}"
+        OUTCOME=${?}
+
+        # If the snapshot was successful and we already reached the threshold, remove
+        # the exceeding ones:
+        if [[ 0 == ${OUTCOME} ]] && [[ ${#SNAPS} -ge ${MAX_SNAPS} ]]; then
+          for(( i=0; i<=$((${#SNAPS[@]} - ${MAX_SNAPS})) && i<${#SNAPS[@]}; i++ )); do
+            echo zfs destroy "${SNAPS[${i}]}"
+          done
+        fi
+    fi
+done
 
 # Return the outcome of snapshot creation:
 exit ${OUTCOME}
