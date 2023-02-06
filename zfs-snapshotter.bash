@@ -43,13 +43,13 @@ for DS in `zfs list $DATASET $RECURSIV -H | awk '{ print $1}'`; do
         || [[ $RECURSIV != -r ]] ; then
 
         # Snapshot to take:
-        SNAP="${DS}@$(date "+%Y-%m-%d")${SUFFIX}"
+        SNAP="${DS}@$(date "+%Y-%m-%d_%H-%M")${SUFFIX}"
 
         # Take in all the DS's snapshots matching the right format:
         SNAPS=(
           $(
             zfs list -t snapshot -o name -r "${DS}" | \
-              grep '@2[0-1][2-9][0-9]-[0-1][0-9]-[0-3][0-9]'
+              grep '@2[0-1][2-9][0-9]-[0-1][0-9]-[0-3][0-9]_[0-2][0-9]-[0-5][0-9]'
           )
         )
 
