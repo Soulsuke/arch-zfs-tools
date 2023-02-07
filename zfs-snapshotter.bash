@@ -49,7 +49,7 @@ for DS in `zfs list $DATASET $RECURSIV -H | awk '{ print $1}'`; do
         SNAPS=(
           $(
             zfs list -t snapshot -o name "${DS}" | \
-              grep '@2[0-1][2-9][0-9]-[0-1][0-9]-[0-3][0-9]_[0-2][0-9]-[0-5][0-9]'
+              grep "@2[0-1][2-9][0-9]-[0-1][0-9]-[0-3][0-9]_[0-2][0-9]-[0-5][0-9]$SUFFIX\$"
           )
         )
 
