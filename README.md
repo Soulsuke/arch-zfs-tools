@@ -74,6 +74,6 @@ Target = usr/lib/initcpio/*
 [Action]
 Description = Creating a backup BE...
 When = PreTransaction
-Exec = /usr/bin/sh -c '/path/to/zfs-snapshotter.bash zroot/e/ROOT/arch 3 "$(uname -r)"'
+Exec = /path/to/zfs-snapshotter.bash zroot/e/ROOT/arch 3 "$(uname -r)"
 ```
 
