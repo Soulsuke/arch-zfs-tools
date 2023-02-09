@@ -38,8 +38,8 @@ if [[ "${SUFFIX}" != "" ]]; then
 fi
 
 # We dive through all the datasets and just hit those without $AUTOSNAP = false
-for DS in `zfs list $DATASET $RECURSIV -H | awk '{ print $1}'`; do
-    if ! [[ `zfs get -H $AUTOSNAP $DS | awk '{print $3}'` =  "false" ]] \
+for DS in `zfs list $DATASET $RECURSIV -H -o name`; do
+    if ! [[ `zfs list -H -o $AUTOSNAP $DS` =  "false" ]] \
         || [[ $RECURSIV != -r ]] ; then
 
         # Snapshot to take:
