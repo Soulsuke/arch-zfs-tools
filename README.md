@@ -51,7 +51,9 @@ Just a handy way to manage a maximum number of snapshots.
 ##### Help reference
 ```
 zfs-snapshotter usage:
-  zfs-snapshotter <dataset name> <max snapshots # to keep> <snapshot suffix>
+  zfs-snapshotter <dataset name> <max snapshots # to keep> [-r] [<snapshot suffix>]
+  
+  -r take recursive snapshots
 ```
 
 ##### Sample usage as a pacman hook for periodic snapshots on kernel update
