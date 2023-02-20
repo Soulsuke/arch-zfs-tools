@@ -47,6 +47,10 @@ It should work as long as an EFI entry has been added calling
 
 A simple bash script to take snapshots of ZFS dataset.  
 Just a handy way to manage a maximum number of snapshots.  
+**NOTE**: the snapshot suffix is just there to add a human readable note to
+snapshots. It won't prevent pruning old automatic snapshots.  
+
+
 
 ##### Help reference
 ```
