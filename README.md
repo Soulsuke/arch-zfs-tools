@@ -43,6 +43,18 @@ It should work as long as an EFI entry has been added calling
 
 
 
+### zfs-snapshots-overview.bash
+
+Quick way to get a simple overview of a pool's snapshots.  
+For each available pool shows:  
+
+* the number of snapshots  
+* the total amount of space used  
+* the smallest snapshot(s)'s size and name(s)  
+* the biggest snapshot(s)'s size and name(s)  
+
+
+
 ### zfs-snapshotter.bash
 
 A simple bash script to take snapshots of ZFS dataset.  
