@@ -55,8 +55,6 @@ mount \
   -o relatime \
   -o fmask=0177 \
   -o dmask=0077 \
-  -o iocharset=utf8 \
-  -o shortname=mixed \
   "${EFI_DEVICE}" "${EFI}" &> /dev/null
 if [[ ! 0 == $? ]]; then
   echo "Failed to mount ${EFI_DEVICE}."
