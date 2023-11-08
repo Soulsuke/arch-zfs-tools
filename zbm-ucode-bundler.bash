@@ -38,27 +38,19 @@ UCODE_MD5_NEW=""
 
 
 
-# Get the current MD5 sums:
-if [[ -f "${KERNEL_PATH}" ]]; then
-  KERNEL_MD5_NEW="$(md5sum "${KERNEL_PATH}" | awk '{ print $1 }')"
-fi
-if [[ -f "${UCODE_PATH}" ]]; then
-  UCODE_MD5_NEW="$(md5sum "${UCODE_PATH}" | awk '{ print $1 }')"
-fi
-
 # If kernel or ucode hasn't been found, simply quit:
-if [[ -z "${KERNEL_MD5_NEW}" ]] || [[ -z "${UCODE_MD5_NEW}" ]]; then
+if [[ ! -f "${KERNEL_PATH}" ]] || [[ ! -f "${UCODE_PATH}" ]]; then
   echo "Kernel or ucode not found: ${KERNEL_PATH} - ${UCODE_PATH}"
   exit 3
 fi
 
+# Get the current MD5 sums:
+KERNEL_MD5_NEW="$(md5sum "${KERNEL_PATH}" | awk '{ print $1 }')"
+UCODE_MD5_NEW="$(md5sum "${UCODE_PATH}" | awk '{ print $1 }')"
+
 # Get the previously stored MD5 sums:
-if [[ -f "${KERNEL_MD5_PATH}" ]]; then
-  KERNEL_MD5="$(cat "${KERNEL_MD5_PATH}")"
-fi
-if [[ -f "${UCODE_MD5_PATH}" ]]; then
-  UCODE_MD5="$(cat "${UCODE_MD5_PATH}")"
-fi
+[[ -f "${KERNEL_MD5_PATH}" ]] && KERNEL_MD5="$(cat "${KERNEL_MD5_PATH}")"
+[[ -f "${UCODE_MD5_PATH}" ]] && UCODE_MD5="$(cat "${UCODE_MD5_PATH}")"
 
 # Otherwise, if checksums are different:
 if [[ "${KERNEL_MD5}" != "${KERNEL_MD5_NEW}" ]] || \
