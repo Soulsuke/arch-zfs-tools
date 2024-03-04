@@ -25,8 +25,11 @@ function cleanup()
   exit $1
 }
 
+# EFI executable name:
+ZBM_EFI="zfsbootmenu.EFI"
+
 # Get zfsbootmenu's entry:
-EBM=$(efibootmgr --verbose | grep -i zfsbootmenu.EFI | sed -E 's,\\,\\\\,g')
+EBM=$(efibootmgr --unicode | grep -i "${ZBM_EFI}" | sed -e 's,\\,/,g')
 if [[ "" == ${EBM} ]]; then
   echo "No existing ZBM entry found via efibootmgr."
   cleanup 2
@@ -40,13 +43,10 @@ mkdir -p "${EFI}"
 EFI_DEVICE="/dev/disk/by-partuuid/$(sed -E 's/(.*GPT,|,.*)//g' <<< ${EBM})"
 
 # Get ZBM's path inside the EFI partition:
-ZBM_PATH="${EFI}/$(
-  sed -E 's,(\\zfsbootmenu\.EFI\).*|.*\(\\\\),,g' <<< ${EBM} |
-    sed -E 's,\\,/,g'
-)/zfsbootmenu.EFI"
+ZBM_PATH="${EFI}/$(sed -E "s,(/${ZBM_EFI}.*|.*\)//),,g" <<< ${EBM})/${ZBM_EFI}"
 
 # Temporary ZBM download path:
-TMP_DWN="/tmp/zfsbootmenu.EFI"
+TMP_DWN="/tmp/${ZBM_EFI}"
 
 # Mount EFI partition:
 umount "${EFI_DEVICE}" &> /dev/null
@@ -83,7 +83,7 @@ fi
 LATEST=$(grep '"tag_name":' <<< ${DATA} | sed -E 's/.*"([^"]+)".*/\1/')
 URL=$(
   grep browser_download_url <<< ${DATA} |
-    grep -e ".*release-.*EFI.*" | 
+    grep -e ".*release-.*EFI.*" |
     sed -E 's/(^.* "|".*$)//g'
 )
 
