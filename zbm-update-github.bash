@@ -7,7 +7,7 @@ if [[ ! 0 == ${UID} ]]; then
 fi
 
 # Dependencies check (better safe than sorry):
-for D in curl efibootmgr grep mount sed umount; do
+for D in curl efibootmgr grep jq mount sed umount; do
   if [[ ! $(command -v ${D}) ]]; then
     echo "Command not found: ${D}"
     unset D
@@ -80,12 +80,8 @@ if [[ ! 0 == $? ]]; then
 fi
 
 # Parse latest release data:
-LATEST=$(grep '"tag_name":' <<< ${DATA} | sed -E 's/.*"([^"]+)".*/\1/')
-URL=$(
-  grep browser_download_url <<< ${DATA} |
-    grep -e ".*release-.*EFI.*" |
-    sed -E 's/(^.* "|".*$)//g'
-)
+LATEST=$(jq -r '.tag_name' <<< ${DATA})
+URL=$(jq -r '.assets[-1].browser_download_url' <<< ${DATA})
 
 # Installed version (if info is available):
 INSTALLED=$(cat "${ZBM_PATH}.version" 2> /dev/null)
