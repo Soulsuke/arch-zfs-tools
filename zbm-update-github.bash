@@ -29,7 +29,12 @@ function cleanup()
 ZBM_EFI="zfsbootmenu.EFI"
 
 # Get zfsbootmenu's entry:
-EBM=$(efibootmgr --unicode | grep -i "${ZBM_EFI}" | sed -e 's,\\,/,g')
+EBM=$(
+  efibootmgr --unicode |
+  grep -i "${ZBM_EFI}" |
+  head -n1 |
+  sed -e 's,\\,/,g'
+)
 if [[ "" == ${EBM} ]]; then
   echo "No existing ZBM entry found via efibootmgr."
   cleanup 2
@@ -81,7 +86,20 @@ fi
 
 # Parse latest release data:
 LATEST=$(jq -r '.tag_name' <<< ${DATA})
-URL=$(jq -r '.assets[-1].browser_download_url' <<< ${DATA})
+
+# Find the right download url of the EFI executable:
+URL=""
+IDX=0
+while ! [[ "${URL,,}" =~ .*.efi$ ]]; do
+  IDX=$((IDX + 1))
+  URL=$(jq -r ".assets[-${IDX}].browser_download_url" <<< ${DATA})
+
+  # This means there was none found, so we may as well quit:
+  if [[ "null" == "${URL}" ]]; then
+    print "Failed to find a suitable EFI executable to download!"
+    cleanup 6
+  fi
+done
 
 # Installed version (if info is available):
 INSTALLED=$(cat "${ZBM_PATH}.version" 2> /dev/null)
@@ -99,7 +117,7 @@ if [[ ! ${INSTALLED} == ${LATEST} ]]; then
   curl -L "${URL}" -o "${TMP_DWN}"
   if [[ ! 0 == $? ]]; then
     echo "Failed to download latest ZBM."
-    cleanup 6
+    cleanup 7
   fi
 
   # Backup the previous version if needed:
